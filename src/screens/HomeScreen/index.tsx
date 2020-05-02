@@ -1,7 +1,7 @@
 import { Button, Layout } from "@ui-kitten/components";
 import React from "react";
 import { StyleSheet } from "react-native";
-import { HomeScreenProps } from "../../navigation/types/navigator";
+import { IScreenProps } from "../../navigation/types/navigator";
 
 const styles = StyleSheet.create({
   root: {
@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const HomeScreen: React.SFC<HomeScreenProps> = ({ navigation }) => {
+const HomeScreen: React.SFC<IScreenProps["Home"]> = ({ navigation }) => {
   return (
     <Layout style={styles.root}>
       <Button onPress={() => navigation.navigate("Details")}>

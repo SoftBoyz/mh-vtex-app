@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Carousel from "react-native-snap-carousel";
 import { StyleSheet, View, Image, Dimensions } from "react-native";
 import { Text } from "@ui-kitten/components";
@@ -8,10 +8,11 @@ import {
   CarouselIndicator,
   CarouselImages,
 } from "../Types/CarouselTypes";
+import { IScreenProps } from "../../../navigation/types/navigator";
 
 const { width, height } = Dimensions.get("window");
 
-const requireFile = (imageKey: CarouselImages): NodeRequire => {
+const requireFile = (imageKey: CarouselImages): any => {
   const images: { [key in CarouselImages]: NodeRequire } = {
     selection: require("../../../../assets/images/selection.png"),
     shopping: require("../../../../assets/images/shopping.png"),
@@ -48,7 +49,9 @@ const CarouselIndicators: React.SFC<CarouselIndicatorWrapper> = ({
   );
 };
 
-const IntroCarousel = () => {
+const IntroCarousel: React.SFC<{ onLastItem: (last: boolean) => void }> = ({
+  onLastItem,
+}) => {
   const carouselRef = useRef(null);
 
   const [currentIndex, handleCurrentIndex] = useState<number>(0);
@@ -57,7 +60,13 @@ const IntroCarousel = () => {
     { title: "Escolha seus itens", image: "selection" },
     { title: "Adicione ao seu carrinho", image: "shopping" },
     { title: "Acompanhe seu pedido", image: "on_the_way" },
+    { title: "Sempre em vista", image: "on_available" },
+    { title: "Seus pedidos seguros", image: "client_packages" },
   ];
+
+  useEffect(() => {
+    onLastItem(currentIndex == entries.length - 1);
+  }, [currentIndex]);
 
   const renderItem = ({
     item,
