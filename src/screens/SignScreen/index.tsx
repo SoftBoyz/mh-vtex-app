@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   StyleSheet,
   Dimensions,
@@ -6,10 +6,9 @@ import {
   Animated,
   View,
   BackHandler,
-  Text,
   Easing,
+  Keyboard,
 } from "react-native";
-import { Layout } from "@ui-kitten/components";
 import { IScreenProps } from "../../navigation/types/navigator";
 import LogoHeader from "../Components/LogoHeader";
 import SignForm from "./Components/SignForm";
@@ -20,8 +19,11 @@ const { width, height } = Dimensions.get("window");
 const loginImage = require("../../../assets/images/login.png");
 
 const SignFormMutable: React.SFC<
-  Omit<IScreenProps["Sign"], "route"> & { onOpen: (short: boolean) => void }
-> = ({ navigation, onOpen }) => {
+  Omit<IScreenProps["Sign"], "route"> & {
+    onOpen: (short: boolean) => void;
+    onKeyboard: (opened: boolean) => void;
+  }
+> = ({ navigation, onOpen, onKeyboard }) => {
   const formIndex = {
     Default: 0,
     Login: 1,
@@ -29,12 +31,29 @@ const SignFormMutable: React.SFC<
   };
 
   const [formSelected, setFormSelected] = useState(0);
-  const formOpened = () => formSelected != formIndex.Default;
 
   const imageMaxHeight = (height / width) * 150;
   const imageShortHeight = (height / width) * 100;
   const imageHeight = useRef(new Animated.Value(imageMaxHeight)).current;
   const imageYOffset = useRef(new Animated.Value(0)).current;
+
+  const keyboardShowListener = Keyboard.addListener("keyboardDidShow", () => {
+    onKeyboard(true);
+    hideImage(true);
+  });
+
+  const keyboardHideListener = Keyboard.addListener("keyboardDidHide", () => {
+    onKeyboard(false);
+    hideImage(false);
+  });
+
+  const hideImage = (hide: boolean) => {
+    Animated.timing(imageHeight, {
+      toValue: hide ? 0 : imageShortHeight,
+      duration: 500,
+      easing: Easing.out(Easing.exp),
+    }).start();
+  };
 
   const openForm = (opened: boolean) => {
     onOpen(opened);
@@ -90,6 +109,7 @@ const SignFormMutable: React.SFC<
         <DefaultForm />
       ) : (
         <LoginRegForm
+          navigation={navigation}
           type={formSelected == formIndex.Login ? "login" : "register"}
         />
       )}
@@ -108,15 +128,30 @@ const SignScreen: React.SFC<IScreenProps["Sign"]> = ({ navigation }) => {
     }).start();
   };
 
+  const keyboardOpened = (opened: boolean) => {
+    Animated.timing(headerHeight, {
+      toValue: opened ? height * 0.3 : height * 0.4,
+      duration: 500,
+      easing: Easing.out(Easing.exp),
+    }).start();
+  };
+
   return (
-    <Layout style={styles.root}>
+    <View style={styles.root}>
       <Animated.View
-        style={{ ...styles.headerBackground, height: headerHeight }}
+        style={{
+          ...styles.headerBackground,
+          height: headerHeight,
+        }}
       />
       <LogoHeader background="basic" />
 
-      <SignFormMutable onOpen={shortenHeader} navigation={navigation} />
-    </Layout>
+      <SignFormMutable
+        onOpen={shortenHeader}
+        onKeyboard={keyboardOpened}
+        navigation={navigation}
+      />
+    </View>
   );
 };
 
@@ -139,9 +174,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     width: "100%",
-    backgroundColor: "#FFF",
     borderBottomLeftRadius: 300,
     borderBottomRightRadius: 500,
+    backgroundColor: "#fff",
   },
   slideImage: {
     top: 0,

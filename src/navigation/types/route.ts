@@ -1,4 +1,4 @@
-export type RouteNames = "Intro" | "Home" | "Details" | "Sign";
+export type RouteNames = "Intro" | "Home" | "Details" | "Sign" | "Stores";
 
 export type AppRoutes = { [K in RouteNames]: K };
 
@@ -7,6 +7,5 @@ export const RoutesDict: AppRoutes = {
   Home: "Home",
   Details: "Details",
   Sign: "Sign",
-  Login: "Login",
-  Register: "Register",
+  Stores: "Stores",
 };
