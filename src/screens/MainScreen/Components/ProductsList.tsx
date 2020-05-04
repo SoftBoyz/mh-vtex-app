@@ -26,10 +26,6 @@ import { default as theme } from "../../../../assets/theme/theme.json";
 import { fetchProducts } from "../Functions/products";
 import { IDatabaseTypes } from "../Types";
 import { IMainRoute } from "../Types/navigation";
-import {
-  TouchableWithoutFeedback,
-  TouchableHighlight,
-} from "react-native-gesture-handler";
 
 const { width, height } = Dimensions.get("screen");
 
@@ -40,7 +36,25 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
 }) => {
   const [products, setProducts] = useState<IDatabaseTypes["Products"][]>();
   const [loading, setLoading] = useState(true);
-  const [selectorOpened, setSelectorOpened] = useState<boolean>();
+
+  const defaultSelectorHeight = 0.4 * height;
+  const selectorHeight = new Animated.Value(defaultSelectorHeight);
+  const selectorWrapperHeight = new Animated.Value(height);
+
+  const openSelector = (open: boolean) => {
+    Animated.parallel([
+      Animated.timing(selectorHeight, {
+        toValue: open ? defaultSelectorHeight : 0,
+        duration: 500,
+        easing: Easing.in(Easing.exp),
+      }),
+      Animated.timing(selectorWrapperHeight, {
+        toValue: open ? height : 0,
+        duration: 500,
+        easing: Easing.in(Easing.exp),
+      }),
+    ]).start();
+  };
 
   BackHandler.addEventListener("hardwareBackPress", () => {
     navigate("Products", previous);
@@ -80,7 +94,7 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
   }) => (
     <ListItem
       onPress={() => {
-        setSelectorOpened(true);
+        openSelector(true);
       }}
       activeOpacity={0.5}
       style={styles.listItem}
@@ -154,32 +168,6 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
   };
 
   const ProductSelector = () => {
-    const defaultSelectorHeight = 0.4 * height;
-    const selectorHeight = new Animated.Value(0);
-    const selectorWrapperHeight = new Animated.Value(0);
-
-    const [ready, setReady] = useState(false);
-    useEffect(() => setReady(true), []);
-
-    useEffect(() => {
-      if (ready && selectorOpened != undefined) openSelector(selectorOpened);
-    }, [selectorOpened]);
-
-    const openSelector = (open: boolean) => {
-      Animated.parallel([
-        Animated.timing(selectorHeight, {
-          toValue: open ? defaultSelectorHeight : 0,
-          duration: 500,
-          easing: Easing.in(Easing.exp),
-        }),
-        Animated.timing(selectorWrapperHeight, {
-          toValue: open ? height : 0,
-          duration: 500,
-          easing: Easing.in(Easing.exp),
-        }),
-      ]).start();
-    };
-
     return (
       <Animated.View
         style={{
@@ -276,6 +264,7 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
                 )}
               />
             </View>
+            <Button appearance="outline" status="control" style={styles.selectorConfirmButton}>ADICIONAR</Button>
           </View>
         </Animated.View>
       </Animated.View>
@@ -455,7 +444,7 @@ const styles = StyleSheet.create({
   },
   productSelectorBackground: {
     width: width,
-    height: 0.4 * height * 0.5,
+    height: 0.4 * height * 0.7,
     backgroundColor: theme["color-primary-500"],
     position: "absolute",
     bottom: 0,
@@ -469,8 +458,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   selectorAvatar: {
-    width: width * 0.3,
-    height: width * 0.3,
+    width: width * 0.2,
+    height: width * 0.2,
     borderRadius: 15,
     borderColor: "#FFF",
     borderWidth: 3,
@@ -482,4 +471,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: width * 0.4,
   },
+  selectorConfirmButton: {
+    marginTop: 15,
+    borderRadius: 20,
+    borderWidth: 3,
+    color: '#FFF',
+  }
 });

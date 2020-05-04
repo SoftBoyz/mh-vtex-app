@@ -1,9 +1,9 @@
-export type MainRoutesNames = "Stores" | "Products" | "Cart" | "Profile";
+export type MainRoutesNames = "Stores" | "Products" | "Orders" | "Profile";
 
 export const MainRoutesDict: { [K in MainRoutesNames]: K } = {
   Stores: "Stores",
   Products: "Products",
-  Cart: "Cart",
+  Orders: "Orders",
   Profile: "Profile",
 };
 
