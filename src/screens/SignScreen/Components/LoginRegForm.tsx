@@ -13,6 +13,16 @@ import { ILoginRefForm, SignErrors } from "../Types";
 import { registerNewUser, loginUser } from "../Functions/register.validation";
 import { IScreenProps } from "../../../navigation/types/navigator";
 import { TouchableHighlight } from "react-native-gesture-handler";
+import { CommonActions } from "@react-navigation/native";
+
+const goMainAndReset = ({ dispatch }: IScreenProps["Sign"]["navigation"]) => {
+  return dispatch(
+    CommonActions.reset({
+      index: 1,
+      routes: [{ name: "Main" }],
+    })
+  );
+};
 
 const LoadingIndicator = (props: any) => (
   <View style={[props.style, styles.indicator]}>
@@ -83,7 +93,7 @@ const LoginRegForm: React.SFC<
     setFormLoading(true);
     loginUser(email, password)
       .then(() => {
-        navigation.navigate("Stores");
+        goMainAndReset(navigation);
       })
       .catch((err: any) => {
         setSubmitMessage(err.code);
@@ -96,8 +106,7 @@ const LoginRegForm: React.SFC<
     registerNewUser(email, password, passwordConfirmation)
       .then((res) => {
         if (res == "signup/success") {
-          setSubmitMessage("");
-          navigation.navigate("Stores");
+          goMainAndReset(navigation);
         } else setSubmitMessage(res);
       })
       .catch((e: SignErrors) => {

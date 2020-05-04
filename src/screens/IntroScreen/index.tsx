@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { StyleSheet, Image, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet } from "react-native";
 import { IScreenProps } from "../../navigation/types/navigator";
-import { Button, Layout, BottomNavigationTab } from "@ui-kitten/components";
+import { Button, Layout } from "@ui-kitten/components";
 import IntroCarousel from "./Components/IntroCarousel";
 import LogoHeader from "../Components/LogoHeader";
+import { fbAuth } from "../../services/firebase-conf";
 
 const IntroScreen: React.SFC<IScreenProps["Intro"]> = ({ navigation }) => {
   const [buttonText, setButtonText] = useState("Pular");

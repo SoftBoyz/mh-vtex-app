@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Dimensions } from "react-native";
 import {
   List,
@@ -10,18 +10,32 @@ import {
   Select,
   SelectItem,
   SelectGroup,
-  Button,
+  Spinner,
+  Layout,
 } from "@ui-kitten/components";
 import { default as theme } from "../../../../assets/theme/theme.json";
+import { fetchStores } from "../Functions/stores";
+import { IDatabaseTypes } from "../Types";
+import { IMainRoute } from "../Types/navigation";
 
 const { width } = Dimensions.get("screen");
 
-const data = new Array(50).fill({
-  title: "Loja",
-  description: "Descrição da loja",
-});
+const StoresList: React.SFC<IMainRoute["Stores"]> = ({
+  navigate,
+  toggleLogoHeader,
+}) => {
+  const [stores, setStores] = useState<IDatabaseTypes["Stores"][]>();
+  const [loading, setLoading] = useState(true);
 
-const StoresList = () => {
+  useEffect(() => {
+    if (toggleLogoHeader) toggleLogoHeader(false);
+
+    fetchStores().then((storesVal) => {
+      if (storesVal) setStores(Object.values(storesVal));
+      setLoading(false);
+    });
+  }, []);
+
   const getRandomRating = () => {
     return (Math.random() * 4 + 1).toFixed(1);
   };
@@ -35,6 +49,7 @@ const StoresList = () => {
 
   const renderItemIcon = (props: any) => (
     <Avatar
+      borderRadius={15}
       size="giant"
       style={styles.avatar}
       source={require("../../../../assets/images/rastaurant_logo_1.png")}
@@ -45,20 +60,22 @@ const StoresList = () => {
     item,
     index,
   }: {
-    item: { title: string; description: string };
+    item: IDatabaseTypes["Stores"];
     index: number;
   }) => (
     <ListItem
+      onPress={() => navigate("Stores", "Products")}
+      activeOpacity={0.5}
       style={styles.listItem}
       title={() => (
-        <Text category="s1" style={{ marginLeft: 10 }}>{`${item.title} ${
-          index + 1
-        }`}</Text>
+        <Text category="s1" style={{ marginLeft: 10 }}>
+          {item.name}
+        </Text>
       )}
       description={() => (
-        <Text category="s2" style={{ marginLeft: 10, color: "#858585" }}>{`${
-          item.description
-        } ${index + 1}`}</Text>
+        <Text category="s2" style={{ marginLeft: 10, color: "#858585" }}>
+          {"Categoria"}
+        </Text>
       )}
       accessoryLeft={renderItemIcon}
       accessoryRight={renderItemIconRight}
@@ -78,12 +95,6 @@ const StoresList = () => {
       <View style={styles.filterMenu}>
         <View style={styles.buttonWrapper}>
           <Select style={styles.locationButton} placeholder="Endereço"></Select>
-
-          {/* <Button
-            style={styles.locationButton}
-            accessoryLeft={PinIcon}
-            size="small"
-          ></Button> */}
         </View>
 
         <View style={styles.filter}>
@@ -114,15 +125,31 @@ const StoresList = () => {
     );
   };
 
-  return (
-    <View style={styles.container}>
-      <Filter />
+  const renderLoading = () => {
+    if (loading) {
+      return (
+        <Layout style={styles.spinnerWrapper}>
+          <Spinner size="giant" />
+        </Layout>
+      );
+    }
+
+    return (
       <List
         style={styles.list}
-        data={data}
+        data={stores}
         renderItem={renderItem}
         ItemSeparatorComponent={Divider}
       />
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.containerBackdrop} />
+      <Filter />
+
+      {renderLoading()}
     </View>
   );
 };
@@ -133,9 +160,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
-    overflow: "hidden",
+    overflow: "visible",
     display: "flex",
     alignItems: "flex-end",
+    justifyContent: "center",
+  },
+  containerBackdrop: {
+    position: "absolute",
+    left: 20,
+    top: -10,
+    width: width - 40,
+    height: "100%",
+    backgroundColor: theme["color-primary-500"],
+    transform: [{ translateY: -10 }],
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+  },
+  spinnerWrapper: {
+    padding: 30,
+    display: "flex",
+    flex: 1,
+    width: "100%",
+    backgroundColor: "rgb(247, 249, 252)",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    flexWrap: "wrap",
   },
   list: {
     flex: 1,
@@ -156,7 +206,7 @@ const styles = StyleSheet.create({
   listItem: {
     marginHorizontal: 15,
     marginVertical: 10,
-    backgroundColor: "transparent",
+    backgroundColor: "rgb(247, 249, 252)",
   },
   itemIconRight: {
     display: "flex",
@@ -168,6 +218,7 @@ const styles = StyleSheet.create({
   },
   avatar: {
     margin: 8,
+    borderRadius: 15,
   },
   buttonWrapper: {
     backgroundColor: "rgb(247, 249, 252)",
@@ -193,7 +244,6 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   filter: {
-    borderTopRightRadius: 15,
     width: "50%",
     padding: 15,
     backgroundColor: "rgb(247, 249, 252)",
