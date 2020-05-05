@@ -24,6 +24,7 @@ const StoresList: React.SFC<IMainRoute["Stores"]> = ({
   navigate,
   toggleLogoHeader,
 }) => {
+  const [storesIds, setStoresIds] = useState<string[]>([])
   const [stores, setStores] = useState<IDatabaseTypes["Stores"][]>();
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +32,10 @@ const StoresList: React.SFC<IMainRoute["Stores"]> = ({
     if (toggleLogoHeader) toggleLogoHeader(false);
 
     fetchStores().then((storesVal) => {
-      if (storesVal) setStores(Object.values(storesVal));
+      if (storesVal) {
+        setStores(Object.values(storesVal));
+        setStoresIds(Object.keys(storesVal))
+      }
       setLoading(false);
     });
   }, []);
@@ -64,7 +68,7 @@ const StoresList: React.SFC<IMainRoute["Stores"]> = ({
     index: number;
   }) => (
     <ListItem
-      onPress={() => navigate("Stores", "Products")}
+      onPress={() => navigate("Stores", "Products", {...item, uid: storesIds[index]})}
       activeOpacity={0.5}
       style={styles.listItem}
       title={() => (

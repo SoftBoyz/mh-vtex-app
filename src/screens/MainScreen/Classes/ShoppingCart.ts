@@ -19,6 +19,10 @@ export default class ShoppingCart {
     this._productsList.push(product)
   } 
 
+  clearProducts() {
+    this._productsList = []
+  }
+
   removeProduct(index: number) {
     if (this._productsList.length == 1) this._productsList = []
     else this._productsList = this._productsList.splice(index, 1)

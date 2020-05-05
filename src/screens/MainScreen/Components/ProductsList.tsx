@@ -7,6 +7,7 @@ import {
   Image,
   Animated,
   Easing,
+  Alert,
 } from "react-native";
 import {
   List,
@@ -34,6 +35,7 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
   navigate,
   previous,
   toggleLogoHeader,
+  params
 }) => {
   const [products, setProducts] = useState<IDatabaseTypes["Products"][]>();
   const [loading, setLoading] = useState(true);
@@ -97,8 +99,29 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
   }) => (
     <ListItem
       onPress={() => {
-        setProductSelected(item)
-        setSelectorOpened(true)
+        const cart = ShoppingCart.getInstance()
+        if (cart.getOriginStore() != "" && cart.getOriginStore() != params?.uid) {
+          Alert.alert('Limpar Compras?', 'Você já tem uma compra de outro local no carrinho, deseja cancela-la?', 
+          [
+            {
+              text: 'Cancelar',
+              onPress: () => {
+                return;
+              },
+              style: 'cancel',
+            },
+            {text: 'Limpar Carrinho', onPress: () => {
+              cart.clearProducts()
+              cart.setOriginStore(params!.uid)
+              setProductSelected(item)
+              setSelectorOpened(true)
+            }},
+          ],)
+        } else {
+          setProductSelected(item)
+          setSelectorOpened(true)
+        }
+
       }}
       activeOpacity={0.5}
       style={styles.listItem}
@@ -138,7 +161,7 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
             blurRadius={0.5}
           />
           <View style={styles.storeInfo}>
-            <Text style={styles.storeTitle}>Restaurante</Text>
+            <Text style={styles.storeTitle}>{params? params.name : 'Restaurante'}</Text>
             <Text style={styles.storeDistance}>1.5Km</Text>
           </View>
         </View>
@@ -275,7 +298,9 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
                 const cart = ShoppingCart.getInstance()
 
                 if (cart && productSelected) {
+                  
                   cart.addProduct(productSelected)
+                  if (params) cart.setOriginStore(params.uid)
                 }
 
                 setSelectorOpened(false)

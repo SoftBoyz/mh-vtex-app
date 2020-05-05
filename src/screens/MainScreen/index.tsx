@@ -19,6 +19,7 @@ import ProductsList from "./Components/ProductsList";
 import { default as theme } from "../../../assets/theme/theme.json";
 import OrdersComponent from "./Components/OrdersComponent";
 import MapComponent from "./Components/MapComponent";
+import { IDatabaseTypes } from "./Types";
 
 const { width, height } = Dimensions.get("screen");
 
@@ -28,6 +29,7 @@ const ListRoutes: React.SFC<{
 }> = ({ componentState, toggleLogoHeader }) => {
   const [currentMain, setCurrentMain] = componentState;
   const [previous, setPrevious] = useState<MainRoutesNames>("Stores");
+  const [param, setParam] = useState<IDatabaseTypes['Stores'] & {uid: string}>()
 
   const MainComponents = () => {
     switch (currentMain) {
@@ -45,6 +47,7 @@ const ListRoutes: React.SFC<{
             navigate={navigate}
             previous={previous}
             toggleLogoHeader={toggleLogoHeader}
+            params={param}
           />
         );
       case "Orders":
@@ -74,9 +77,10 @@ const ListRoutes: React.SFC<{
     }
   };
 
-  const navigate = (origin: MainRoutesNames, destination: MainRoutesNames) => {
+  const navigate = (origin: MainRoutesNames, destination: MainRoutesNames, param?: IDatabaseTypes['Stores'] & {uid: string}) => {
     setPrevious(origin);
     setCurrentMain(destination);
+    setParam(param)
   };
 
   return <MainComponents />;

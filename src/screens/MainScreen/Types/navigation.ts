@@ -1,3 +1,5 @@
+import { IDatabaseTypes } from ".";
+
 export type MainRoutesNames = "Stores" | "Products" | "Orders" | "Profile" | "Map";
 
 export const MainRoutesDict: { [K in MainRoutesNames]: K } = {
@@ -11,7 +13,8 @@ export const MainRoutesDict: { [K in MainRoutesNames]: K } = {
 export type IMainRoute = {
   [K in MainRoutesNames]: {
     previous: MainRoutesNames;
-    navigate: (origin: K, destination: MainRoutesNames) => void;
+    navigate: (origin: K, destination: MainRoutesNames, params?: IDatabaseTypes['Stores'] & {uid: string}) => void;
     toggleLogoHeader?: (toggle: boolean | 'off') => void;
+    params?: IDatabaseTypes['Stores']  & {uid: string}
   };
 };
