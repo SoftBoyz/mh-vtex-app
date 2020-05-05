@@ -1,4 +1,4 @@
-# Smart 
+# <div align="center"><img src="./assets/images/logo.png" width="150px"/></div>
 
 O Smart foi um aplicativo criado como uma solução do problema proposto no Mega Hack 2020.
 
