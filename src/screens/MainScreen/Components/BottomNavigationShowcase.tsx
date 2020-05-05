@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {
   BottomNavigation,
@@ -6,8 +6,10 @@ import {
   Icon,
 } from "@ui-kitten/components";
 import { default as theme } from "../../../../assets/theme/theme.json";
+import { fbAuth } from "../../../services/firebase-conf";
+import { MainRoutesNames } from "../Types/navigation";
 
-const CartIcon = (props: any, index: number) => (
+const BagIcon = (props: any, index: number) => (
   <Icon
     {...props}
     fill={index == 0 ? theme["color-primary-500"] : "#b9bfc7"}
@@ -15,7 +17,7 @@ const CartIcon = (props: any, index: number) => (
   />
 );
 
-const BellIcon = (props: any, index: number) => (
+const CartIcon = (props: any, index: number) => (
   <View>
     <Icon
       {...props}
@@ -26,36 +28,44 @@ const BellIcon = (props: any, index: number) => (
   </View>
 );
 
-const EmailIcon = (props: any, index: number) => (
+const LogOutIcon = (props: any, index: number) => (
   <Icon
     {...props}
     fill={index == 2 ? theme["color-primary-500"] : "#b9bfc7"}
-    name={index == 2 ? "person" : "person-outline"}
+    name="log-out"
   />
 );
 
-const useBottomNavigationState = (initialState = 0) => {
-  const [selectedIndex, setSelectedIndex] = React.useState(initialState);
-  return { selectedIndex, onSelect: setSelectedIndex };
-};
+const BottomNavigationShowcase: React.SFC<{
+  onTabChange: React.Dispatch<React.SetStateAction<MainRoutesNames>>
+}> = ({ onTabChange }) => {
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
 
-const BottomNavigationShowcase = () => {
-  const topState = useBottomNavigationState();
+  useEffect(() => {
+    if (selectedIndex == 2) {
+      fbAuth.signOut()
+    } else if (selectedIndex == 0) {
+      onTabChange('Stores')
+    } else if (selectedIndex == 1) {
+      onTabChange('Orders')
+    }
+    
+  }, [selectedIndex])
 
   return (
     <React.Fragment>
-      <BottomNavigation style={styles.bottomNavigation} {...topState}>
+      <BottomNavigation selectedIndex={selectedIndex} onSelect={setSelectedIndex} style={styles.bottomNavigation}>
         <BottomNavigationTab
           title="LOJAS"
-          icon={(p) => CartIcon(p, topState.selectedIndex)}
+          icon={(p) => BagIcon(p, selectedIndex)}
         />
         <BottomNavigationTab
           title="PEDIDOS"
-          icon={(p) => BellIcon(p, topState.selectedIndex)}
+          icon={(p) => CartIcon(p, selectedIndex)}
         />
         <BottomNavigationTab
-          title="PERFIL"
-          icon={(p) => EmailIcon(p, topState.selectedIndex)}
+          title="SAIR"
+          icon={(p) => LogOutIcon(p, selectedIndex)}
         />
       </BottomNavigation>
     </React.Fragment>

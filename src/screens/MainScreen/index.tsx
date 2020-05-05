@@ -17,19 +17,17 @@ import { MainRoutesNames } from "./Types/navigation";
 import ProductsList from "./Components/ProductsList";
 
 import { default as theme } from "../../../assets/theme/theme.json";
+import OrdersComponent from "./Components/OrdersComponent";
+import MapComponent from "./Components/MapComponent";
 
 const { width, height } = Dimensions.get("screen");
 
 const ListRoutes: React.SFC<{
-  onComponentChange: (component: MainRoutesNames) => void;
-  toggleLogoHeader: (toggle: boolean) => void;
-}> = ({ onComponentChange, toggleLogoHeader }) => {
-  const [currentMain, setCurrentMain] = useState<MainRoutesNames>("Stores");
+  componentState:  [MainRoutesNames, React.Dispatch<React.SetStateAction<MainRoutesNames>>]
+  toggleLogoHeader: (toggle: boolean | 'off') => void;
+}> = ({ componentState, toggleLogoHeader }) => {
+  const [currentMain, setCurrentMain] = componentState;
   const [previous, setPrevious] = useState<MainRoutesNames>("Stores");
-
-  useEffect(() => {
-    onComponentChange(currentMain);
-  }, [currentMain]);
 
   const MainComponents = () => {
     switch (currentMain) {
@@ -49,6 +47,22 @@ const ListRoutes: React.SFC<{
             toggleLogoHeader={toggleLogoHeader}
           />
         );
+      case "Orders":
+        return(
+          <OrdersComponent
+            navigate={navigate}
+            previous={previous}
+            toggleLogoHeader={toggleLogoHeader}
+          />
+        )
+      case "Map":
+        return (
+          <MapComponent
+            navigate={ navigate}
+            previous={previous}
+            toggleLogoHeader={toggleLogoHeader}
+            />
+        )
       default:
         return (
           <StoresList
@@ -79,8 +93,9 @@ const useAuthentication = ({
 const MainScreen: React.SFC<IScreenProps["Main"]> = ({ navigation }) => {
   useAuthentication(navigation);
 
-  const [currentComponent, setCurrentComponent] = useState<MainRoutesNames>();
-  const [logoHeader, setLogoHeader] = useState<boolean>(false);
+  const currentComponentState = useState<MainRoutesNames>('Stores');
+  const [logoHeader, setLogoHeader] = useState<boolean | 'off'>(false);
+  const [headerVisible, setHeaderVisible] = useState(true)
 
   BackHandler.addEventListener("hardwareBackPress", () => {
     console.log("Close");
@@ -97,26 +112,32 @@ const MainScreen: React.SFC<IScreenProps["Main"]> = ({ navigation }) => {
     const viewWidth = new Animated.Value(width - 40);
     const viewTop = new Animated.Value(height * 0.1 + 30);
 
-    const grownHeader = (grown: boolean) => {
-      Animated.parallel([
-        Animated.timing(viewWidth, {
-          toValue: grown ? width : defaultViewWidth,
-          duration: 600,
-          easing: Easing.in(Easing.exp),
-        }),
-        Animated.timing(viewTop, {
-          toValue: grown ? 0 : defaultViewTop,
-          duration: 600,
-          easing: Easing.in(Easing.exp),
-        }),
-      ]).start();
+    const grownHeader = (grown: boolean | 'off') => {
+      if (grown == "off") {
+        setHeaderVisible(false)
+        return 
+      }
+      setHeaderVisible(true)
+        Animated.parallel([
+          Animated.timing(viewWidth, {
+            toValue: grown ? width : defaultViewWidth,
+            duration: 600,
+            easing: Easing.in(Easing.exp),
+          }),
+          Animated.timing(viewTop, {
+            toValue: grown ? 0 : defaultViewTop,
+            duration: 600,
+            easing: Easing.in(Easing.exp),
+          }),
+        ]).start();
+      
     };
 
     useEffect(() => {
       grownHeader(logoHeader);
     }, [logoHeader]);
 
-    return (
+    return headerVisible ? (
       <>
         <MapView
           style={styles.map}
@@ -138,7 +159,7 @@ const MainScreen: React.SFC<IScreenProps["Main"]> = ({ navigation }) => {
           <Image style={styles.logoHeader} source={OpacityLogo} />
         </Animated.View>
       </>
-    );
+    ) : <></>
   };
 
   return (
@@ -150,11 +171,11 @@ const MainScreen: React.SFC<IScreenProps["Main"]> = ({ navigation }) => {
       </View>
 
       <ListRoutes
-        onComponentChange={setCurrentComponent}
+        componentState={currentComponentState}
         toggleLogoHeader={setLogoHeader}
       />
 
-      <BottomNavigationShowcase />
+      <BottomNavigationShowcase onTabChange={currentComponentState[1]}/>
     </View>
   );
 };

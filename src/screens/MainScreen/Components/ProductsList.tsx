@@ -26,6 +26,7 @@ import { default as theme } from "../../../../assets/theme/theme.json";
 import { fetchProducts } from "../Functions/products";
 import { IDatabaseTypes } from "../Types";
 import { IMainRoute } from "../Types/navigation";
+import ShoppingCart from "../Classes/ShoppingCart";
 
 const { width, height } = Dimensions.get("screen");
 
@@ -36,25 +37,27 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
 }) => {
   const [products, setProducts] = useState<IDatabaseTypes["Products"][]>();
   const [loading, setLoading] = useState(true);
+  const [productSelected, setProductSelected] = useState<IDatabaseTypes['Products']>()
+  const [selectorOpened, setSelectorOpened] = useState(false)
 
   const defaultSelectorHeight = 0.4 * height;
-  const selectorHeight = new Animated.Value(defaultSelectorHeight);
-  const selectorWrapperHeight = new Animated.Value(height);
+  const selectorHeight = new Animated.Value(0);
+  const selectorWrapperHeight = new Animated.Value(0);
 
-  const openSelector = (open: boolean) => {
+  useEffect(() => {
     Animated.parallel([
       Animated.timing(selectorHeight, {
-        toValue: open ? defaultSelectorHeight : 0,
+        toValue: selectorOpened ? defaultSelectorHeight : 0,
         duration: 500,
         easing: Easing.in(Easing.exp),
       }),
       Animated.timing(selectorWrapperHeight, {
-        toValue: open ? height : 0,
+        toValue: selectorOpened ? height : 0,
         duration: 500,
         easing: Easing.in(Easing.exp),
       }),
     ]).start();
-  };
+  }, [selectorOpened])
 
   BackHandler.addEventListener("hardwareBackPress", () => {
     navigate("Products", previous);
@@ -94,7 +97,8 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
   }) => (
     <ListItem
       onPress={() => {
-        openSelector(true);
+        setProductSelected(item)
+        setSelectorOpened(true)
       }}
       activeOpacity={0.5}
       style={styles.listItem}
@@ -176,7 +180,9 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
         }}
       >
         <Button
-          onPress={() => openSelector(false)}
+          onPress={() => {
+            setSelectorOpened(false)
+          }}
           style={styles.productSelectorCloseArea}
         />
 
@@ -202,7 +208,7 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
                 textAlign: "center",
               }}
             >
-              {"Produto"}
+              {productSelected ? productSelected.name : "Produto"}
             </Text>
 
             <Text
@@ -214,7 +220,7 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
                 marginBottom: 10,
               }}
             >
-              {"R$00"}
+              {`R$ ${productSelected ? productSelected.price : "00"}`}
             </Text>
 
             <View style={styles.selectorActions}>
@@ -264,7 +270,17 @@ const ProductsList: React.SFC<IMainRoute["Products"]> = ({
                 )}
               />
             </View>
-            <Button appearance="outline" status="control" style={styles.selectorConfirmButton}>ADICIONAR</Button>
+            <Button onPress={
+              () => {
+                const cart = ShoppingCart.getInstance()
+
+                if (cart && productSelected) {
+                  cart.addProduct(productSelected)
+                }
+
+                setSelectorOpened(false)
+              }
+            } appearance="outline" status="control" style={styles.selectorConfirmButton}>ADICIONAR</Button>
           </View>
         </Animated.View>
       </Animated.View>
